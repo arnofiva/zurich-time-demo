@@ -5,11 +5,10 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import { watch } from "@arcgis/core/core/reactiveUtils";
-import Fullscreen from "@arcgis/core/widgets/Fullscreen";
+import Expand from "@arcgis/core/widgets/Expand";
+import LayerList from "@arcgis/core/widgets/LayerList";
 import AppStore from "../stores/AppStore";
 import Header from "./Header";
-import Player from "./Player";
 import { Widget } from "./Widget";
 
 type AppProperties = Pick<App, "store">;
@@ -21,28 +20,13 @@ class App extends Widget<AppProperties> {
 
   postInitialize(): void {
     const view = this.store.view;
-    const fullscreen = new Fullscreen({ view });
-    view.ui.add(fullscreen, "top-right");
-
-    const player = new Player({
-      store: this.store.playerStore,
-    });
-
-    view.ui.add(player, "bottom-right");
-
-    this.addHandles(
-      watch(
-        () => this.store.playerStore.state,
-        (state) => {
-          if (state === "animating") {
-            player.visible = false;
-            fullscreen.visible = false;
-          } else if (state === "ready") {
-            player.visible = true;
-            fullscreen.visible = true;
-          }
-        }
-      )
+    const layerList = new LayerList({ view });
+    view.ui.add(
+      new Expand({
+        view,
+        content: layerList,
+      }),
+      "bottom-right",
     );
   }
 

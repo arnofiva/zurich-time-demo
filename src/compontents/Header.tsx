@@ -9,11 +9,14 @@ import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import "@esri/calcite-components/dist/components/calcite-action";
 import "@esri/calcite-components/dist/components/calcite-button";
+import "@esri/calcite-components/dist/components/calcite-chip";
+import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-menu";
 import "@esri/calcite-components/dist/components/calcite-menu-item";
 import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
+import "@esri/calcite-components/dist/components/calcite-switch";
 
 type HeaderProperties = Pick<Header, "store">;
 
@@ -60,6 +63,10 @@ class Header extends Widget<HeaderProperties> {
   render() {
     const userMenuClass = this.userMenuOpen ? "" : "hide";
 
+    const liveButtonDisabled = !this.store.canGoLive;
+    const liveButtonKind = this.store.isLive ? "brand" : "neutral";
+    const liveButtonLoading = this.store.isChangingLiveState;
+
     return (
       <div>
         <calcite-navigation slot="header">
@@ -72,6 +79,38 @@ class Header extends Widget<HeaderProperties> {
               this.openScene();
             }}
           ></calcite-navigation-logo>
+
+          <calcite-label
+            disabled={liveButtonDisabled}
+            layout="inline"
+            slot="content-center"
+          >
+            <calcite-chip
+              icon="refresh"
+              class={
+                this.store.isLive || this.store.isChangingLiveState
+                  ? "refresh"
+                  : "refresh active"
+              }
+            >
+              Refresh
+            </calcite-chip>
+
+            <calcite-switch
+              onCalciteSwitchChange={() => this.store.toggleLiveMode()}
+              scale="l"
+            ></calcite-switch>
+            <calcite-chip
+              icon="activity-monitor"
+              class={
+                this.store.isLive && !this.store.isChangingLiveState
+                  ? "live active"
+                  : "live"
+              }
+            >
+              Live
+            </calcite-chip>
+          </calcite-label>
 
           {this.renderUserProfile()}
         </calcite-navigation>

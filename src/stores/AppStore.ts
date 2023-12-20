@@ -4,9 +4,11 @@ import {
   property,
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
-import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import { debounce } from "@arcgis/core/core/promiseUtils";
+import { when, whenOnce } from "@arcgis/core/core/reactiveUtils";
 import SceneView from "@arcgis/core/views/SceneView";
-import PlayerStore from "./PlayerStore";
+import { evStations, parkings } from "../layers";
+import { timeout } from "../utils";
 import UserStore from "./UserStore";
 
 type AppStoreProperties = Pick<AppStore, "view">;
@@ -22,23 +24,59 @@ class AppStore extends Accessor {
   @property({ constructOnly: true })
   userStore = new UserStore();
 
-  @property({ constructOnly: true })
-  playerStore: PlayerStore;
+  @property()
+  canGoLive = false;
+
+  @property()
+  isLive = false;
+
+  @property()
+  isChangingLiveState = false;
 
   constructor(props: AppStoreProperties) {
     super(props);
-
-    this.playerStore = new PlayerStore({ view: props.view });
 
     whenOnce(() => this.map).then(async (map) => {
       await map.load();
       document.title = map.portalItem.title;
 
       await map.loadAll();
-
-      this.playerStore.slides = map.presentation.slides;
     });
+
+    this.addHandles([
+      when(
+        () => this.userStore.authenticated,
+        () => {
+          this.canGoLive = this.userStore.authenticated;
+        },
+        { initial: true },
+      ),
+    ]);
   }
+
+  toggleLiveMode = debounce(async () => {
+    this.isChangingLiveState = true;
+
+    const streamLayers = [parkings, evStations];
+
+    if (this.isLive) {
+      this.isLive = false;
+      this.view.map.removeMany(streamLayers);
+      await timeout(1000);
+    } else {
+      this.isLive = true;
+      this.view.map.addMany(streamLayers);
+      const lvs = await Promise.all(
+        streamLayers.map((l) => this.view.whenLayerView(l)),
+      );
+      await Promise.all([
+        timeout(1000),
+        ...lvs.map(async (lv) => await whenOnce(() => !lv.updating)),
+      ]);
+    }
+
+    this.isChangingLiveState = false;
+  });
 }
 
 export default AppStore;
