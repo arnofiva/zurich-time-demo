@@ -1,7 +1,13 @@
 import Color from "@arcgis/core/Color";
 import StreamLayer from "@arcgis/core/layers/StreamLayer";
+import LabelClass from "@arcgis/core/layers/support/LabelClass";
 import { UniqueValueRenderer } from "@arcgis/core/renderers";
-import { IconSymbol3DLayer, PointSymbol3D } from "@arcgis/core/symbols";
+import {
+  IconSymbol3DLayer,
+  LabelSymbol3D,
+  PointSymbol3D,
+  TextSymbol3DLayer,
+} from "@arcgis/core/symbols";
 import LineCallout3D from "@arcgis/core/symbols/callouts/LineCallout3D";
 
 type IconType = "parking" | "ev";
@@ -76,11 +82,79 @@ export const evStations = new StreamLayer({
       },
     ],
   }),
+  labelingInfo: [
+    new LabelClass({
+      labelExpressionInfo: {
+        expression: "'EV Charger ' + $feature.EvseStatus",
+      },
+      symbol: new LabelSymbol3D({
+        symbolLayers: [
+          new TextSymbol3DLayer({
+            material: {
+              color: "white",
+            },
+            halo: {
+              color: [80, 80, 80],
+              size: 1,
+            },
+            size: 8,
+          }),
+        ],
+        callout: new LineCallout3D({
+          type: "line",
+          size: 1.5,
+          color: [200, 200, 200],
+        }),
+        verticalOffset: {
+          screenLength: 25,
+          maxWorldLength: 150000,
+          minWorldLength: 20,
+        },
+      }),
+      labelPlacement: "above-center",
+      maxScale: 0,
+      minScale: 0,
+    }),
+  ],
 });
 
 // https://velocitydemo.maps.arcgis.com/home/item.html?id=15d346c38cc34359b91c25a767f64d73
 export const parkings = new StreamLayer({
   url: "https://us-iot.arcgis.com/bc1qjuyagnrebxvh/bc1qjuyagnrebxvh/streams/arcgis/rest/services/Zurich__parking_live/StreamServer",
+  labelingInfo: [
+    new LabelClass({
+      labelExpressionInfo: {
+        expression: "$feature.available + ' / ' + $feature.anzahl_oef",
+      },
+      symbol: new LabelSymbol3D({
+        symbolLayers: [
+          new TextSymbol3DLayer({
+            material: {
+              color: "white",
+            },
+            halo: {
+              color: [80, 80, 80],
+              size: 1,
+            },
+            size: 8,
+          }),
+        ],
+        callout: new LineCallout3D({
+          type: "line",
+          size: 1.5,
+          color: [200, 200, 200],
+        }),
+        verticalOffset: {
+          screenLength: 25,
+          maxWorldLength: 150000,
+          minWorldLength: 20,
+        },
+      }),
+      labelPlacement: "above-center",
+      maxScale: 0,
+      minScale: 0,
+    }),
+  ],
   renderer: new UniqueValueRenderer({
     valueExpression:
       "When($feature.available < 5, 'low', $feature.available < 10, 'medium', 'high')",
