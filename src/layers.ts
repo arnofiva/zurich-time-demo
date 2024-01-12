@@ -74,7 +74,7 @@ export const evStations = new StreamLayer({
     uniqueValueInfos: [
       {
         value: "Occupied",
-        symbol: createSymbol("ev", new Color("#BFBFBF")),
+        symbol: createSymbol("ev", new Color("#D90012")),
       },
       {
         value: "Available",
