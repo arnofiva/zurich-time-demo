@@ -56,10 +56,10 @@ class AppStore extends Accessor {
         (l) => l.title === "Parking",
       ) as FeatureLayer;
 
-      parkings.renderer = parkingFL.renderer;
-      parkings.elevationInfo = parkingFL.elevationInfo;
+      // parkings.renderer = parkingFL.renderer;
+      // parkings.elevationInfo = parkingFL.elevationInfo;
       // parkings.labelingInfo = parkingFL.labelingInfo;
-      parkings.popupTemplate = parkingFL.popupTemplate;
+      // parkings.popupTemplate = parkingFL.popupTemplate;
 
       this.featureLayers.push(evFL, parkingFL);
 
