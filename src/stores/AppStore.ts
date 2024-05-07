@@ -47,16 +47,16 @@ class AppStore extends Accessor {
         (l) => l.title === "EV stations",
       ) as FeatureLayer;
 
-      evStations.renderer = evFL.renderer;
-      evStations.elevationInfo = evFL.elevationInfo;
-      evStations.labelingInfo = evFL.labelingInfo;
+      // evStations.renderer = evFL.renderer;
+      // evStations.elevationInfo = evFL.elevationInfo;
+      // evStations.labelingInfo = evFL.labelingInfo;
       evStations.popupTemplate = evFL.popupTemplate;
 
       const parkingFL = map.allLayers.find(
         (l) => l.title === "Parking",
       ) as FeatureLayer;
 
-      parkings.renderer = parkingFL.renderer;
+      //parkings.renderer = parkingFL.renderer;
       parkings.elevationInfo = parkingFL.elevationInfo;
       // parkings.labelingInfo = parkingFL.labelingInfo;
       parkings.popupTemplate = parkingFL.popupTemplate;

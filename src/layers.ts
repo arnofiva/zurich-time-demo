@@ -10,56 +10,26 @@ import {
 } from "@arcgis/core/symbols";
 import LineCallout3D from "@arcgis/core/symbols/callouts/LineCallout3D";
 
-type IconType = "parking" | "ev";
+type IconType = "parking-low" | "parking-high" | "parking-medium" | "parking-empty" | "ev-occupied" | "ev-free" | "ev-unknown";
 
-const icon = (type: IconType) => {
-  switch (type) {
-    case "ev":
-      return "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Fuel.svg";
-    case "parking":
-      return "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Parking.svg";
-  }
-};
-
-const createSymbol = (type: IconType, color: Color) => {
-  const size = 15;
-
+const createSymbol = (type: IconType) => {
   return new PointSymbol3D({
     verticalOffset: {
-      screenLength: type === "parking" ? 30 : 60,
+      screenLength: type.includes("parking") ? 60 : 30,
       maxWorldLength: 500,
       minWorldLength: 20,
     },
     callout: new LineCallout3D({
-      size: 1.2,
-      // border: {
-      //   color: "red",
-      // },
-      color,
+      size: 2,
+      color: [255, 255, 255, 0.6],
     }),
     symbolLayers: [
       new IconSymbol3DLayer({
-        anchor: "center",
+        anchor: "bottom",
         resource: {
-          primitive: "circle",
+          href: `./${type}.png`,
         },
-        size: size * 1.4,
-        material: {
-          color: "white",
-        },
-        outline: {
-          color: color,
-          size: 1,
-        },
-      }),
-      new IconSymbol3DLayer({
-        material: {
-          color,
-        },
-        resource: {
-          href: icon(type),
-        },
-        size,
+        size: 30,
       }),
     ],
   });
@@ -70,18 +40,19 @@ export const evStations = new StreamLayer({
   url: "https://us-iot.arcgis.com/bc1qjuyagnrebxvh/bc1qjuyagnrebxvh/streams/arcgis/rest/services/Zurich__ev_stations_live1/StreamServer",
   renderer: new UniqueValueRenderer({
     valueExpression: "$feature.EvseStatus",
-    defaultSymbol: createSymbol("ev", new Color("#BFBFBF")),
+    defaultSymbol: createSymbol("ev-unknown"),
     uniqueValueInfos: [
       {
         value: "Occupied",
-        symbol: createSymbol("ev", new Color("#D90012")),
+        symbol: createSymbol("ev-occupied"),
       },
       {
         value: "Available",
-        symbol: createSymbol("ev", new Color("#00A0FF")),
+        symbol: createSymbol("ev-free"),
       },
     ],
   }),
+  labelsVisible: false,
   labelingInfo: [
     new LabelClass({
       labelExpressionInfo: {
@@ -124,13 +95,16 @@ export const parkings = new StreamLayer({
   labelingInfo: [
     new LabelClass({
       labelExpressionInfo: {
-        expression: "$feature.available + ' / ' + $feature.anzahl_oef",
+        expression: "$feature.available + ' free'",
       },
       symbol: new LabelSymbol3D({
         symbolLayers: [
           new TextSymbol3DLayer({
             material: {
               color: "white",
+            },
+            background: {
+              color: [50, 50, 50, 0.6],
             },
             halo: {
               color: [80, 80, 80],
@@ -139,38 +113,32 @@ export const parkings = new StreamLayer({
             size: 8,
           }),
         ],
-        callout: new LineCallout3D({
-          type: "line",
-          size: 1.5,
-          color: [200, 200, 200],
-        }),
-        verticalOffset: {
-          screenLength: 25,
-          maxWorldLength: 150000,
-          minWorldLength: 20,
-        },
       }),
-      labelPlacement: "above-center",
+      labelPlacement: "center-right",
       maxScale: 0,
       minScale: 0,
     }),
   ],
   renderer: new UniqueValueRenderer({
     valueExpression:
-      "When($feature.available < 5, 'low', $feature.available < 10, 'medium', 'high')",
-    defaultSymbol: createSymbol("parking", new Color([50, 50, 50])),
+      "When($feature.available == 0, 'empty', $feature.available < 5, 'low', $feature.available < 10, 'medium', 'high')",
+    defaultSymbol: createSymbol("parking-empty"),
     uniqueValueInfos: [
       {
+        value: "empty",
+        symbol: createSymbol("parking-empty"),
+      },
+      {
         value: "low",
-        symbol: createSymbol("parking", new Color("#D90012")),
+        symbol: createSymbol("parking-low"),
       },
       {
         value: "medium",
-        symbol: createSymbol("parking", new Color("#FFC900")),
+        symbol: createSymbol("parking-medium"),
       },
       {
         value: "high",
-        symbol: createSymbol("parking", new Color("#36DA43")),
+        symbol: createSymbol("parking-high"),
       },
     ],
   }),
