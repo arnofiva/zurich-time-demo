@@ -48,7 +48,7 @@ class AppStore extends Accessor {
       ) as FeatureLayer;
 
       // evStations.renderer = evFL.renderer;
-      // evStations.elevationInfo = evFL.elevationInfo;
+      evStations.elevationInfo = evFL.elevationInfo;
       // evStations.labelingInfo = evFL.labelingInfo;
       evStations.popupTemplate = evFL.popupTemplate;
 
